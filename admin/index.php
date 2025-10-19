@@ -1,5 +1,6 @@
 <?php
-define( 'YOURLS_ADMIN', true );
+if (!defined('YOURLS_ADMIN')) {
+    define( 'YOURLS_ADMIN', true );}
 require_once( dirname( __DIR__ ).'/includes/load-yourls.php' );
 yourls_maybe_require_auth();
 

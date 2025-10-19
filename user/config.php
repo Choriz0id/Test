@@ -26,6 +26,10 @@ $yourls_user_passwords = [
     'admin' => 'loli2013',
 ];
 
+$yourls_reserved_URL = array(
+    'admin', 'login', 'logout', 'signup', 'user'
+);
+
 // Логи для отладки
 define('YOURLS_DEBUG', true);
 
