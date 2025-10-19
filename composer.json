@@ -1,0 +1,10 @@
+{
+  "name": "yourls/yourls",
+  "description": "YOURLS on Railway",
+  "require": {
+    "php": ">=8.0"
+  },
+  "scripts": {
+    "start": "php -S 0.0.0.0:$PORT -t ."
+  }
+}
