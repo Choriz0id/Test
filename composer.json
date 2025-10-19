@@ -16,7 +16,7 @@
         "source": "https://github.com/YOURLS/YOURLS"
     },
     "require": {
-        "php": ">=8.2",
+        "php": "8.4.13",
         "ext-dom": "*",
         "ext-filter": "*",
         "ext-hash": "*",
@@ -53,7 +53,6 @@
         "ext-zlib": "For best performance"
     },
     "scripts": {
-        "start": "php -S 0.0.0.0:$PORT -t .",
         "post-update-cmd": "bash ./includes/vendor/build-script/yourls-build.sh ./includes/vendor"
     }
 }
