@@ -9,8 +9,7 @@ define('YOURLS_SITE', 'https://test-production-1e3f.up.railway.app');
 define('YOURLS_DB_USER', 'root');
 define('YOURLS_DB_PASS', 'jIHoLbyEuHNKuaNlVUUbDhEawiBXThVq');
 define('YOURLS_DB_NAME', 'railway');
-define('YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net');
-define('YOURLS_DB_PORT', 37244);
+define('YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net:37244');
 define('YOURLS_DB_PREFIX', 'yourls_');
 
 // Включаем админку
