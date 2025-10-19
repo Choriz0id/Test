@@ -1,0 +1,28 @@
+{
+    auto_https off
+    admin off
+    frankenphp
+}
+
+:{$PORT:8080} {
+    root * /app
+    
+    # Включаем PHP через FrankenPHP
+    php_server
+    
+    # Обработка коротких ссылок - все запросы идут через yourls-loader.php
+    @notFile {
+        not file
+        not path /admin/* /includes/* /js/* /css/* /images/*
+    }
+    rewrite @notFile /yourls-loader.php
+    
+    # Кодировка
+    encode gzip
+    
+    # Логи
+    log {
+        output stdout
+        format console
+    }
+}

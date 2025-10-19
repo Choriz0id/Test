@@ -12,9 +12,6 @@ define('YOURLS_DB_NAME', 'railway');
 define('YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net:37244');
 define('YOURLS_DB_PREFIX', 'yourls_');
 
-// Включаем админку
-define('YOURLS_ADMIN', true);
-
 // Разрешаем админку без HTTPS
 define('YOURLS_ALLOW_INSECURE_ADMIN', true);
 
