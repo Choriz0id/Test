@@ -38,8 +38,8 @@ function utm_tracking_create_table() {
 }
 
 // Перехват редиректа для сохранения UTM данных
-yourls_add_action('redirect_shorturl', 'utm_tracking_save_data');
-function utm_tracking_save_data($url, $keyword) {
+yourls_add_filter('redirect_location', 'utm_tracking_save_and_modify', 10, 2);
+function utm_tracking_save_and_modify($location, $keyword) {
     global $ydb;
     
     // Получаем UTM параметры
@@ -72,11 +72,9 @@ function utm_tracking_save_data($url, $keyword) {
                 'user_agent' => $user_agent
             )
         );
-    }
-    
-    // Добавляем UTM параметры к целевому URL
-    if ($utm_source || $utm_medium || $utm_campaign) {
-        $parsed = parse_url($url[0]);
+        
+        // Добавляем UTM параметры к целевому URL
+        $parsed = parse_url($location);
         $params = array();
         
         if (isset($parsed['query'])) {
@@ -90,11 +88,13 @@ function utm_tracking_save_data($url, $keyword) {
         if ($utm_content) $params['utm_content'] = $utm_content;
         
         $new_query = http_build_query($params);
-        $url[0] = $parsed['scheme'] . '://' . $parsed['host'] . 
-                  (isset($parsed['path']) ? $parsed['path'] : '') . 
-                  '?' . $new_query .
-                  (isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '');
+        $location = $parsed['scheme'] . '://' . $parsed['host'] . 
+                    (isset($parsed['path']) ? $parsed['path'] : '') . 
+                    '?' . $new_query .
+                    (isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '');
     }
+    
+    return $location;
 }
 
 // Добавляем страницу статистики в админку
