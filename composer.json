@@ -53,6 +53,7 @@
         "ext-zlib": "For best performance"
     },
     "scripts": {
+        "start": "php -S 0.0.0.0:8080 -t public",
         "post-update-cmd": "bash ./includes/vendor/build-script/yourls-build.sh ./includes/vendor"
     }
 }

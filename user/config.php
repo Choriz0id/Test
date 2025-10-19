@@ -3,13 +3,14 @@
 
 // === Основной домен твоего YOURLS ===
 // Замени на адрес твоего проекта Railway:
-define('YOURLS_SITE', 'https://t.me/Plowka');
+define('YOURLS_SITE', 'https://test-production-1e3f.up.railway.app');
 
 // === Параметры базы данных ===
 define('YOURLS_DB_USER', 'root');
 define('YOURLS_DB_PASS', 'jIHoLbyEuHNKuaNlVUUbDhEawiBXThVq');
 define('YOURLS_DB_NAME', 'railway');
-define('YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net:37244');
+define('YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net');
+define('YOURLS_DB_PORT', 37244);
 define('YOURLS_DB_PREFIX', 'yourls_');
 
 // === Общие настройки ===
@@ -27,4 +28,4 @@ define('YOURLS_PRIVATE', true);
 define('YOURLS_COOKIEKEY', 'aSuperRandomSecretKey123456789!@#');
 
 // === Режим отладки ===
-define('YOURLS_DEBUG', false);
+define('YOURLS_DEBUG', true);
