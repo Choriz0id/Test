@@ -20,6 +20,7 @@ $yourls_user_passwords = [
 $yourls_reserved_URL = [];
 
 define('YOURLS_ADMIN', true); // должна быть включена
+define('YOURLS_ALLOW_INSECURE_ADMIN', true);
 
 // **Cookie key** - случайная строка для безопасности
 define( 'YOURLS_COOKIEKEY', 'r8UjW9sE2zTQ4bP1xC6kL0vF3aYdM7nH' );
