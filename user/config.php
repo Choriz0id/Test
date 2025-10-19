@@ -3,7 +3,7 @@
 
 // === Основной домен твоего YOURLS ===
 // Замени на адрес твоего проекта Railway:
-define('YOURLS_SITE', 'https://railway.com/project/f5b4a20b-f63b-46e6-8f62-8b57c51b2123/service/3e93e8c1-dc42-4a67-9f21-0a1f9a0604b3/database?environmentId=e66e669b-a2dc-4719-b7f3-2aa63e8906ab');
+define('YOURLS_SITE', 'https://t.me/Plowka');
 
 // === Параметры базы данных ===
 define('YOURLS_DB_USER', 'root');
