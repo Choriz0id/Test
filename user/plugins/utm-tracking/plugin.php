@@ -3,7 +3,7 @@
 Plugin Name: UTM Tracking
 Plugin URI: https://github.com/yourls/yourls
 Description: Сохраняет и передаёт UTM-метки при переходе по коротким ссылкам
-Version: 1.0
+Version: 1.1
 Author: Custom
 */
 
@@ -34,7 +34,7 @@ function utm_tracking_create_table() {
         KEY `click_time` (`click_time`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
     
-    $ydb->query($sql);
+    $ydb->fetchAffected($sql);
 }
 
 // Перехват редиректа для сохранения UTM данных
@@ -44,21 +44,15 @@ function utm_tracking_save_and_modify($location, $keyword) {
     
     // Проверяем что location не пустой
     if (empty($location)) {
-        error_log("UTM Tracking: Empty location for keyword: $keyword");
         return $location;
     }
     
-    // Получаем UTM параметры
-    $utm_source = isset($_GET['utm_source']) ? yourls_sanitize_string($_GET['utm_source']) : null;
-    $utm_medium = isset($_GET['utm_medium']) ? yourls_sanitize_string($_GET['utm_medium']) : null;
-    $utm_campaign = isset($_GET['utm_campaign']) ? yourls_sanitize_string($_GET['utm_campaign']) : null;
-    $utm_term = isset($_GET['utm_term']) ? yourls_sanitize_string($_GET['utm_term']) : null;
-    $utm_content = isset($_GET['utm_content']) ? yourls_sanitize_string($_GET['utm_content']) : null;
-    
-    // Логируем для отладки
-    if ($utm_source || $utm_medium || $utm_campaign) {
-        error_log("UTM Tracking: Found UTM params - source: $utm_source, medium: $utm_medium, campaign: $utm_campaign");
-    }
+    // Получаем UTM параметры (используем filter_input для безопасности)
+    $utm_source = filter_input(INPUT_GET, 'utm_source', FILTER_SANITIZE_SPECIAL_CHARS);
+    $utm_medium = filter_input(INPUT_GET, 'utm_medium', FILTER_SANITIZE_SPECIAL_CHARS);
+    $utm_campaign = filter_input(INPUT_GET, 'utm_campaign', FILTER_SANITIZE_SPECIAL_CHARS);
+    $utm_term = filter_input(INPUT_GET, 'utm_term', FILTER_SANITIZE_SPECIAL_CHARS);
+    $utm_content = filter_input(INPUT_GET, 'utm_content', FILTER_SANITIZE_SPECIAL_CHARS);
     
     // Если есть хотя бы один UTM параметр, сохраняем
     if ($utm_source || $utm_medium || $utm_campaign || $utm_term || $utm_content) {
@@ -68,26 +62,25 @@ function utm_tracking_save_and_modify($location, $keyword) {
         $referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
         $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
         
-        // Экранируем данные для безопасности
-        $keyword_safe = yourls_escape($keyword);
-        $source_safe = $utm_source ? "'" . yourls_escape($utm_source) . "'" : "NULL";
-        $medium_safe = $utm_medium ? "'" . yourls_escape($utm_medium) . "'" : "NULL";
-        $campaign_safe = $utm_campaign ? "'" . yourls_escape($utm_campaign) . "'" : "NULL";
-        $term_safe = $utm_term ? "'" . yourls_escape($utm_term) . "'" : "NULL";
-        $content_safe = $utm_content ? "'" . yourls_escape($utm_content) . "'" : "NULL";
-        $ip_safe = yourls_escape($ip);
-        $referrer_safe = $referrer ? "'" . yourls_escape($referrer) . "'" : "NULL";
-        $user_agent_safe = $user_agent ? "'" . yourls_escape($user_agent) . "'" : "NULL";
+        // Используем prepared statement через PDO
+        $sql = "INSERT INTO `$table` 
+                (keyword, utm_source, utm_medium, utm_campaign, utm_term, utm_content, ip, referrer, user_agent) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        $sql = "INSERT INTO `$table` (keyword, utm_source, utm_medium, utm_campaign, utm_term, utm_content, ip, referrer, user_agent) 
-                VALUES ('$keyword_safe', $source_safe, $medium_safe, $campaign_safe, $term_safe, $content_safe, '$ip_safe', $referrer_safe, $user_agent_safe)";
-        
-        $result = $ydb->query($sql);
-        
-        if (!$result) {
-            error_log("UTM Tracking: Failed to insert data for keyword: $keyword");
-        } else {
-            error_log("UTM Tracking: Successfully saved data for keyword: $keyword");
+        try {
+            $ydb->fetchAffected($sql, [
+                $keyword,
+                $utm_source,
+                $utm_medium,
+                $utm_campaign,
+                $utm_term,
+                $utm_content,
+                $ip,
+                $referrer,
+                $user_agent
+            ]);
+        } catch (Exception $e) {
+            error_log("UTM Tracking: Error saving data - " . $e->getMessage());
         }
         
         // Добавляем UTM параметры к целевому URL
@@ -109,8 +102,6 @@ function utm_tracking_save_and_modify($location, $keyword) {
                     (isset($parsed['path']) ? $parsed['path'] : '') . 
                     '?' . $new_query .
                     (isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '');
-        
-        error_log("UTM Tracking: Modified location to: $location");
     }
     
     return $location;
@@ -133,15 +124,15 @@ function utm_tracking_stats_page() {
     $table = YOURLS_DB_TABLE_URL . '_utm';
     
     // Получаем статистику по кампаниям
-    $campaigns = $ydb->get_results(
-        "SELECT utm_campaign, utm_source, utm_medium, COUNT(*) as clicks, 
-                MIN(click_time) as first_click, MAX(click_time) as last_click
-         FROM `$table`
-         WHERE utm_campaign IS NOT NULL
-         GROUP BY utm_campaign, utm_source, utm_medium
-         ORDER BY clicks DESC
-         LIMIT 100"
-    );
+    $sql = "SELECT utm_campaign, utm_source, utm_medium, COUNT(*) as clicks, 
+                   MIN(click_time) as first_click, MAX(click_time) as last_click
+            FROM `$table`
+            WHERE utm_campaign IS NOT NULL
+            GROUP BY utm_campaign, utm_source, utm_medium
+            ORDER BY clicks DESC
+            LIMIT 100";
+    
+    $campaigns = $ydb->fetchObjects($sql);
     
     echo '<h2>UTM Статистика</h2>';
     
@@ -175,16 +166,47 @@ function utm_tracking_stats_page() {
         echo '<p>Нет данных UTM</p>';
     }
     
+    // Статистика по источникам
+    $sql_sources = "SELECT utm_source, COUNT(*) as clicks
+                    FROM `$table`
+                    WHERE utm_source IS NOT NULL
+                    GROUP BY utm_source
+                    ORDER BY clicks DESC
+                    LIMIT 20";
+    
+    $sources = $ydb->fetchObjects($sql_sources);
+    
+    if ($sources) {
+        echo '<h3 style="margin-top: 30px;">Топ источников</h3>';
+        echo '<table class="tblSorter" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Источник (utm_source)</th>
+                    <th>Клики</th>
+                </tr>
+            </thead>
+            <tbody>';
+        
+        foreach ($sources as $row) {
+            echo '<tr>';
+            echo '<td>' . htmlspecialchars($row->utm_source) . '</td>';
+            echo '<td>' . $row->clicks . '</td>';
+            echo '</tr>';
+        }
+        
+        echo '</tbody></table>';
+    }
+    
     // Статистика по коротким ссылкам
-    $keywords = $ydb->get_results(
-        "SELECT u.keyword, u.url, u.title, COUNT(utm.id) as utm_clicks
-         FROM " . YOURLS_DB_TABLE_URL . " u
-         LEFT JOIN `$table` utm ON u.keyword = utm.keyword
-         GROUP BY u.keyword
-         HAVING utm_clicks > 0
-         ORDER BY utm_clicks DESC
-         LIMIT 50"
-    );
+    $sql_keywords = "SELECT u.keyword, u.url, u.title, COUNT(utm.id) as utm_clicks
+                     FROM " . YOURLS_DB_TABLE_URL . " u
+                     LEFT JOIN `$table` utm ON u.keyword = utm.keyword
+                     GROUP BY u.keyword
+                     HAVING utm_clicks > 0
+                     ORDER BY utm_clicks DESC
+                     LIMIT 50";
+    
+    $keywords = $ydb->fetchObjects($sql_keywords);
     
     if ($keywords) {
         echo '<h3 style="margin-top: 30px;">Короткие ссылки с UTM переходами</h3>';
