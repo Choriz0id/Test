@@ -1,8 +1,8 @@
 <?php
-// YOURLS configuration file
+// YOURLS configuration file for Railway
 
 // === Основной домен твоего YOURLS ===
-// Замени на адрес твоего проекта Railway:
+// Используй публичный URL, который выдал Railway:
 define('YOURLS_SITE', 'https://test-production-1e3f.up.railway.app');
 
 // === Параметры базы данных ===
@@ -20,7 +20,7 @@ define('YOURLS_UNIQUE_URLS', true);
 
 // === Доступ в админку ===
 $yourls_user_passwords = [
-    'admin' => 'loli2013', // логин и пароль
+    'admin' => 'loli2013',
 ];
 
 // === Безопасность ===
@@ -28,4 +28,5 @@ define('YOURLS_PRIVATE', true);
 define('YOURLS_COOKIEKEY', 'aSuperRandomSecretKey123456789!@#');
 
 // === Режим отладки ===
-define('YOURLS_DEBUG', true);
+define('YOURLS_DEBUG', true);        // включаем для отладки
+define('YOURLS_DEBUG_DISPLAY', true);
