@@ -11,20 +11,13 @@ conn = mysql.connector.connect(
 
 cursor = conn.cursor()
 
-# Создание таблицы для MySQL
-create_table_query = """
-CREATE TABLE IF NOT EXISTS yourls_utm_log (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    keyword VARCHAR(255) NOT NULL,
-    utm_data TEXT NOT NULL,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-"""
+# Удаление таблиц
+tables_to_drop = ["yourls_url_utm", "yourls_utm_log"]
 
-cursor.execute(create_table_query)
+for table in tables_to_drop:
+    cursor.execute(f"DROP TABLE IF EXISTS {table};")
+    print(f"Таблица {table} удалена (если существовала)")
+
 conn.commit()
-
-print("Таблица создана!")
-
 cursor.close()
 conn.close()

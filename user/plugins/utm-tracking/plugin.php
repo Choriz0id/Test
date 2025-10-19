@@ -42,12 +42,23 @@ yourls_add_filter('redirect_location', 'utm_tracking_save_and_modify', 10, 2);
 function utm_tracking_save_and_modify($location, $keyword) {
     global $ydb;
     
+    // Проверяем что location не пустой
+    if (empty($location)) {
+        error_log("UTM Tracking: Empty location for keyword: $keyword");
+        return $location;
+    }
+    
     // Получаем UTM параметры
     $utm_source = isset($_GET['utm_source']) ? yourls_sanitize_string($_GET['utm_source']) : null;
     $utm_medium = isset($_GET['utm_medium']) ? yourls_sanitize_string($_GET['utm_medium']) : null;
     $utm_campaign = isset($_GET['utm_campaign']) ? yourls_sanitize_string($_GET['utm_campaign']) : null;
     $utm_term = isset($_GET['utm_term']) ? yourls_sanitize_string($_GET['utm_term']) : null;
     $utm_content = isset($_GET['utm_content']) ? yourls_sanitize_string($_GET['utm_content']) : null;
+    
+    // Логируем для отладки
+    if ($utm_source || $utm_medium || $utm_campaign) {
+        error_log("UTM Tracking: Found UTM params - source: $utm_source, medium: $utm_medium, campaign: $utm_campaign");
+    }
     
     // Если есть хотя бы один UTM параметр, сохраняем
     if ($utm_source || $utm_medium || $utm_campaign || $utm_term || $utm_content) {
@@ -57,21 +68,27 @@ function utm_tracking_save_and_modify($location, $keyword) {
         $referrer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : null;
         $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null;
         
-        $ydb->query(
-            "INSERT INTO `$table` (keyword, utm_source, utm_medium, utm_campaign, utm_term, utm_content, ip, referrer, user_agent) 
-             VALUES (:keyword, :source, :medium, :campaign, :term, :content, :ip, :referrer, :user_agent)",
-            array(
-                'keyword' => $keyword,
-                'source' => $utm_source,
-                'medium' => $utm_medium,
-                'campaign' => $utm_campaign,
-                'term' => $utm_term,
-                'content' => $utm_content,
-                'ip' => $ip,
-                'referrer' => $referrer,
-                'user_agent' => $user_agent
-            )
-        );
+        // Экранируем данные для безопасности
+        $keyword_safe = yourls_escape($keyword);
+        $source_safe = $utm_source ? "'" . yourls_escape($utm_source) . "'" : "NULL";
+        $medium_safe = $utm_medium ? "'" . yourls_escape($utm_medium) . "'" : "NULL";
+        $campaign_safe = $utm_campaign ? "'" . yourls_escape($utm_campaign) . "'" : "NULL";
+        $term_safe = $utm_term ? "'" . yourls_escape($utm_term) . "'" : "NULL";
+        $content_safe = $utm_content ? "'" . yourls_escape($utm_content) . "'" : "NULL";
+        $ip_safe = yourls_escape($ip);
+        $referrer_safe = $referrer ? "'" . yourls_escape($referrer) . "'" : "NULL";
+        $user_agent_safe = $user_agent ? "'" . yourls_escape($user_agent) . "'" : "NULL";
+        
+        $sql = "INSERT INTO `$table` (keyword, utm_source, utm_medium, utm_campaign, utm_term, utm_content, ip, referrer, user_agent) 
+                VALUES ('$keyword_safe', $source_safe, $medium_safe, $campaign_safe, $term_safe, $content_safe, '$ip_safe', $referrer_safe, $user_agent_safe)";
+        
+        $result = $ydb->query($sql);
+        
+        if (!$result) {
+            error_log("UTM Tracking: Failed to insert data for keyword: $keyword");
+        } else {
+            error_log("UTM Tracking: Successfully saved data for keyword: $keyword");
+        }
         
         // Добавляем UTM параметры к целевому URL
         $parsed = parse_url($location);
@@ -92,6 +109,8 @@ function utm_tracking_save_and_modify($location, $keyword) {
                     (isset($parsed['path']) ? $parsed['path'] : '') . 
                     '?' . $new_query .
                     (isset($parsed['fragment']) ? '#' . $parsed['fragment'] : '');
+        
+        error_log("UTM Tracking: Modified location to: $location");
     }
     
     return $location;
