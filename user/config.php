@@ -17,6 +17,7 @@ define( 'YOURLS_SITE', 'https://test-production-1e3f.up.railway.app' );
 $yourls_user_passwords = [
     'admin' => 'loli2013',
 ];
+$yourls_reserved_URL = [];
 
 // **Cookie key** - случайная строка для безопасности
 define( 'YOURLS_COOKIEKEY', 'r8UjW9sE2zTQ4bP1xC6kL0vF3aYdM7nH' );
