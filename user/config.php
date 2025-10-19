@@ -3,35 +3,32 @@
  * YOURLS Configuration
  */
 
-// **MySQL settings** - берём из твоей строки подключения
-define( 'YOURLS_DB_USER', 'root' );
-define( 'YOURLS_DB_PASS', 'jIHoLbyEuHNKuaNlVUUbDhEawiBXThVq' );
-define( 'YOURLS_DB_NAME', 'railway' );
-define( 'YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net:37244' );
-define( 'YOURLS_DB_PREFIX', 'yourls_' ); // можно оставить по умолчанию
+define('YOURLS_SITE', 'https://test-production-1e3f.up.railway.app');
 
-// **Site options**
-define( 'YOURLS_SITE', 'https://test-production-1e3f.up.railway.app' );
+// База данных
+define('YOURLS_DB_USER', 'root');
+define('YOURLS_DB_PASS', 'jIHoLbyEuHNKuaNlVUUbDhEawiBXThVq');
+define('YOURLS_DB_NAME', 'railway');
+define('YOURLS_DB_HOST', 'nozomi.proxy.rlwy.net');
+define('YOURLS_DB_PORT', 37244);
+define('YOURLS_DB_PREFIX', 'yourls_');
 
-// **Admin user** - логин и пароль
+// Включаем админку
+define('YOURLS_ADMIN', true);
+
+// Разрешаем админку без HTTPS
+define('YOURLS_ALLOW_INSECURE_ADMIN', true);
+
+// Приватный режим (только авторизованные)
+define('YOURLS_PRIVATE', true);
+
+// Пользователи
 $yourls_user_passwords = [
     'admin' => 'loli2013',
 ];
-$yourls_reserved_URL = [];
 
-define('YOURLS_ADMIN', true); // должна быть включена
-define('YOURLS_ALLOW_INSECURE_ADMIN', true);
-
-// **Cookie key** - случайная строка для безопасности
-define( 'YOURLS_COOKIEKEY', 'r8UjW9sE2zTQ4bP1xC6kL0vF3aYdM7nH' );
-
-// **Debug mode**
-define( 'YOURLS_DEBUG', true ); // временно включаем для логов, потом можно false
-
-// **URL shortening settings**
-define( 'YOURLS_URL_CONVERT', 36 ); // 36 = a-z0-9
-define( 'YOURLS_PRIVATE', true );   // true = админка приватная
-define( 'YOURLS_UNIQUE_URLS', true ); // разрешаем уникальные короткие ссылки
+// Логи для отладки
+define('YOURLS_DEBUG', true);
 
 // **Optional settings**
 // define( 'YOURLS_LANG', 'en' ); // язык админки
